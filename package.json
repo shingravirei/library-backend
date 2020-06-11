@@ -1,0 +1,19 @@
+{
+    "name": "hello-graphql",
+    "version": "0.1.0",
+    "description": "",
+    "main": "server.js",
+    "scripts": {
+        "test": "jest",
+        "dev": "nodemon ./src/server.js"
+    },
+    "keywords": [],
+    "author": "shingravirei",
+    "license": "MIT",
+    "dependencies": {
+        "apollo-server": "^2.14.3",
+        "graphql": "^15.1.0",
+        "nodemon": "^2.0.4",
+        "uuid": "^8.1.0"
+    }
+}
