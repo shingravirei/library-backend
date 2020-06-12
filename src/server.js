@@ -1,4 +1,4 @@
-const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer, UserInputError } = require('apollo-server');
 const { v4: uuid } = require('uuid');
 
 const typeDefs = require('./typedefs');
@@ -14,15 +14,17 @@ const resolvers = {
 
             if (!author && !genre) return books;
 
-            if (genre) return books.filter(book => book.genres.includes(genre));
+            if (genre) {
+                return books.filter((book) => book.genres.includes(genre));
+            }
 
-            return books.filter(book => book.author === author);
+            return books.filter((book) => book.author === author);
         },
 
         allAuthors: () => {
-            const authorsWithBookCount = authors.map(author => {
+            const authorsWithBookCount = authors.map((author) => {
                 const authorBooks = books.filter(
-                    book => book.author === author.name
+                    (book) => book.author === author.name
                 );
 
                 const bookCount = authorBooks.length;
@@ -36,13 +38,17 @@ const resolvers = {
 
     Mutation: {
         addBook: (root, args) => {
-            const { author, setBornTo } = args;
+            const { author, title } = args;
 
             // If the author is not in the library, we add him to the records
-            if (!authors.find(a => a.name === author)) {
+            if (!authors.find((a) => a.name === author)) {
                 const newAuthor = { name: author, id: uuid() };
 
                 authors = authors.concat(newAuthor);
+            }
+
+            if (books.find((book) => book.title === title)) {
+                throw new UserInputError('Book already in library');
             }
 
             const newBook = { ...args, id: uuid() };
@@ -55,15 +61,17 @@ const resolvers = {
         editAuthor: (root, args) => {
             const { name, setBornTo } = args;
 
-            if (!authors.find(author => author.name === name)) {
+            if (!authors.find((author) => author.name === name)) {
                 return null;
             }
 
-            authors = authors.map(author =>
-                author.name === name ? { ...author, born: setBornTo } : author
-            );
+            authors = authors.map((author) => {
+                if (author.name === name) return { ...author, born: setBornTo };
 
-            return authors.find(author => author.name === name);
+                return author;
+            });
+
+            return authors.find((author) => author.name === name);
         }
     }
 };
