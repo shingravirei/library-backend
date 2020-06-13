@@ -21,19 +21,7 @@ const resolvers = {
             return books.filter((book) => book.author === author);
         },
 
-        allAuthors: () => {
-            const authorsWithBookCount = authors.map((author) => {
-                const authorBooks = books.filter(
-                    (book) => book.author === author.name
-                );
-
-                const bookCount = authorBooks.length;
-
-                return { ...author, bookCount };
-            });
-
-            return authorsWithBookCount;
-        }
+        allAuthors: () => authors
     },
 
     Mutation: {
@@ -73,6 +61,11 @@ const resolvers = {
 
             return authors.find((author) => author.name === name);
         }
+    },
+
+    Author: {
+        bookCount: (parent) =>
+            books.filter((book) => book.author === parent.name).length
     }
 };
 

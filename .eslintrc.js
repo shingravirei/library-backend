@@ -21,6 +21,7 @@ module.exports = {
         'arrow-body-style': 'warn',
         'linebreak-style': ['off', 'windows'],
         indent: ['error', 4],
-        'comma-dangle': 'off'
+        'comma-dangle': 'off',
+        'implicit-arrow-linebreak': 'off'
     }
 };
