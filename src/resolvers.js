@@ -1,69 +1,107 @@
 const { UserInputError } = require('apollo-server');
-const { v4: uuid } = require('uuid');
-let { authors, books } = require('./library');
+const { Op } = require('sequelize');
+const { Author, Book } = require('./models/db');
 
 const resolvers = {
     Query: {
-        bookCount: () => books.length,
-        authorCount: () => authors.length,
+        bookCount: async () => {
+            const { count } = await Book.findAndCountAll();
 
-        allBooks: (root, args) => {
-            const { author, genre } = args;
+            return count;
+        },
+        authorCount: async () => {
+            const { count } = await Author.findAndCountAll();
 
-            if (!author && !genre) return books;
-
-            if (genre) {
-                return books.filter((book) => book.genres.includes(genre));
-            }
-
-            return books.filter((book) => book.author === author);
+            return count;
         },
 
-        allAuthors: () => authors
+        allBooks: async (root, args) => {
+            const { author, genre } = args;
+
+            if (!author && !genre) {
+                const books = await Book.findAll();
+
+                return books;
+            }
+
+            if (genre) {
+                const books = await Book.findAll({
+                    where: {
+                        genres: {
+                            [Op.like]: `%${genre}%`
+                        }
+                    }
+                });
+
+                return books;
+            }
+
+            const books = await Book.findAll({
+                include: [
+                    {
+                        model: Author,
+                        where: {
+                            name: author
+                        }
+                    }
+                ]
+            });
+
+            return books;
+        },
+
+        allAuthors: async () => {
+            const authors = await Author.findAll({
+                attributes: ['id', 'name', 'born']
+            });
+
+            return authors;
+        }
     },
 
     Mutation: {
-        addBook: (root, args) => {
-            const { author, title } = args;
+        addBook: async (root, args) => {
+            // eslint-disable-next-line object-curly-newline
+            const { author, title, published, genres } = args;
 
             // If the author is not in the library, we add him to the records
-            if (!authors.find((a) => a.name === author)) {
-                const newAuthor = { name: author, id: uuid() };
+            const findAuthor = await Author.findOrCreate({
+                where: { name: author }
+            });
 
-                authors = authors.concat(newAuthor);
-            }
+            const book = await Book.findOne({
+                where: {
+                    title
+                }
+            });
 
-            if (books.find((book) => book.title === title)) {
+            if (book) {
                 throw new UserInputError('Book already in library');
             }
 
-            const newBook = { ...args, id: uuid() };
-
-            books = books.concat(newBook);
+            const newBook = Book.create({
+                title,
+                published,
+                genres,
+                authorId: findAuthor.id
+            });
 
             return newBook;
         },
 
-        editAuthor: (root, args) => {
+        editAuthor: async (root, args) => {
             const { name, setBornTo } = args;
 
-            if (!authors.find((author) => author.name === name)) {
+            const author = await Author.findOne({ where: { name } });
+
+            if (!author) {
                 return null;
             }
 
-            authors = authors.map((author) => {
-                if (author.name === name) return { ...author, born: setBornTo };
+            await author.update({ born: setBornTo }, { fields: ['born'] });
 
-                return author;
-            });
-
-            return authors.find((author) => author.name === name);
+            return author;
         }
-    },
-
-    Author: {
-        bookCount: (parent) =>
-            books.filter((book) => book.author === parent.name).length
     }
 };
 

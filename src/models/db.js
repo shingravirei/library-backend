@@ -11,12 +11,12 @@ const sequelize = new Sequelize({
 Author.hasMany(Book);
 Book.belongsTo(Author);
 
-Author.sync({ force: true }).then((res) => {
-    console.log('user, works');
-});
+// Author.sync({ force: true }).then((res) => {
+//     console.log('user, works');
+// });
 
-Book.sync({ force: true }).then((res) => {
-    console.log('book, works');
-});
+// Book.sync({ force: true }).then((res) => {
+//     console.log('book, works');
+// });
 
-sequelize.close();
+module.exports = { Author, Book, sequelize };
