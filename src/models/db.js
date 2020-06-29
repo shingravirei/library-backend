@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize');
+const User = require('./User');
 const Author = require('./Author');
 const Book = require('./Book');
 
@@ -19,4 +20,13 @@ Book.belongsTo(Author);
 //     console.log('book, works');
 // });
 
-module.exports = { Author, Book, sequelize };
+// User.sync({ force: true }).then(() => {
+//     console.log('User table createad!');
+// });
+
+module.exports = {
+    User,
+    Author,
+    Book,
+    sequelize
+};

@@ -1,9 +1,23 @@
+const jwt = require('jsonwebtoken');
 const { UserInputError } = require('apollo-server');
 const { Op } = require('sequelize');
-const { Author, Book } = require('./models/db');
+const { User, Author, Book } = require('./models/db');
+const { JWT_SECRET } = require('./config');
 
 const resolvers = {
     Query: {
+        me: async (root, args, context) => {
+            const { username } = context.username;
+
+            const user = await User.findOne({
+                where: {
+                    username
+                }
+            });
+
+            return user;
+        },
+
         bookCount: async () => {
             const { count } = await Book.findAndCountAll();
 
@@ -24,8 +38,6 @@ const resolvers = {
                     raw: true,
                     nest: true
                 });
-
-                console.log(books);
 
                 return books;
             }
@@ -66,7 +78,47 @@ const resolvers = {
     },
 
     Mutation: {
-        addBook: async (root, args) => {
+        createUser: async (root, args) => {
+            const { username, favoriteGenre } = args;
+            const password = 'password';
+
+            const user = await User.create({
+                username,
+                password,
+                favoriteGenre
+            });
+
+            return user;
+        },
+
+        login: async (root, args) => {
+            const { username, password } = args;
+
+            const user = await User.findOne({
+                where: { username }
+            });
+
+            if (!user || password !== 'password') {
+                throw new UserInputError('Wrong credentials!');
+            }
+
+            const userForToken = {
+                id: user.id,
+                username: user.username
+            };
+
+            const token = jwt.sign(userForToken, JWT_SECRET);
+
+            return { value: token };
+        },
+        addBook: async (root, args, context) => {
+            // TODO: maybe add a helper function here
+            const { username } = context;
+
+            if (!username) {
+                throw new UserInputError('User must be logged in!');
+            }
+
             // eslint-disable-next-line object-curly-newline
             const { author, title, published, genres } = args;
 
@@ -95,7 +147,13 @@ const resolvers = {
             return newBook;
         },
 
-        editAuthor: async (root, args) => {
+        editAuthor: async (root, args, context) => {
+            const { username } = context;
+
+            if (!username) {
+                throw new UserInputError('User must be logged in!');
+            }
+
             const { name, setBornTo } = args;
 
             const author = await Author.findOne({ where: { name } });
