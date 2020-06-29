@@ -19,7 +19,13 @@ const resolvers = {
             const { author, genre } = args;
 
             if (!author && !genre) {
-                const books = await Book.findAll();
+                const books = await Book.findAll({
+                    include: [Author],
+                    raw: true,
+                    nest: true
+                });
+
+                console.log(books);
 
                 return books;
             }
