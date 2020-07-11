@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { UserInputError } = require('apollo-server');
 const { Op } = require('sequelize');
-const { User, Author, Book } = require('./models/db');
-const { JWT_SECRET } = require('./config');
+const { User, Author, Book } = require('../sequelize');
+const { JWT_SECRET } = require('../config');
 
 const resolvers = {
     Query: {

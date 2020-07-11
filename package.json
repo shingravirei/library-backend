@@ -5,7 +5,8 @@
     "main": "server.js",
     "scripts": {
         "test": "jest",
-        "dev": "nodemon ./src/server.js"
+        "dev": "nodemon ./src/server.js",
+        "migrate:up": "node ./src/sequelize.js migrate:up"
     },
     "keywords": [],
     "author": "shingravirei",

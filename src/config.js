@@ -1,3 +1,6 @@
-const JWT_SECRET = 'THERE_IS_SOME_BIG_SECRET_HERE';
+require('dotenv').config();
 
-module.exports = { JWT_SECRET };
+const JWT_SECRET = process.env.SECRET;
+const DB_PATH = process.env.SQLITE_DEV_PATH;
+
+module.exports = { JWT_SECRET, DB_PATH };

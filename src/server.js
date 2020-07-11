@@ -1,8 +1,8 @@
 const { ApolloServer } = require('apollo-server');
 const jwt = require('jsonwebtoken');
 
-const typeDefs = require('./typedefs');
-const resolvers = require('./resolvers');
+const typeDefs = require('./graphql/typedefs');
+const resolvers = require('./graphql/resolvers');
 const { JWT_SECRET } = require('./config');
 
 const server = new ApolloServer({
