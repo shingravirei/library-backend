@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { UserInputError } = require('apollo-server');
+const Sequelize = require('sequelize');
 const { Op } = require('sequelize');
 const { User, Author, Book } = require('../sequelize');
 const { JWT_SECRET } = require('../config');
@@ -70,7 +71,18 @@ const resolvers = {
 
         allAuthors: async () => {
             const authors = await Author.findAll({
-                attributes: ['id', 'name', 'born']
+                raw: true,
+                attributes: [
+                    'id',
+                    'name',
+                    'born',
+                    [
+                        Sequelize.fn('COUNT', Sequelize.col('books.title')),
+                        'bookCount'
+                    ]
+                ],
+                include: [{ model: Book, attributes: [], required: false }],
+                group: ['name']
             });
 
             return authors;
