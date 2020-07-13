@@ -35,10 +35,10 @@ const resolvers = {
 
             if (!author && !genre) {
                 const books = await Book.findAll({
-                    include: [Author],
-                    raw: true,
-                    nest: true
+                    include: [Author]
                 });
+
+                console.log(books);
 
                 return books;
             }
@@ -136,6 +136,7 @@ const resolvers = {
 
             // If the author is not in the library, we add him to the records
             const findAuthor = await Author.findOrCreate({
+                raw: true,
                 where: { name: author }
             });
 
@@ -153,7 +154,7 @@ const resolvers = {
                 title,
                 published,
                 genres,
-                authorId: findAuthor.id
+                authorId: findAuthor[0].id
             });
 
             return newBook;
